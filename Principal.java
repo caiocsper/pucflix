@@ -15,6 +15,8 @@ public class Principal {
                 System.out.println("-----------");
                 System.out.println("> Início");
                 System.out.println("\n1 - Séries");
+                System.out.println("2 - Episódios");
+                System.out.println("3 - Atores");
                 System.out.println("9 - Povoar");
                 System.out.println("0 - Sair");
 
@@ -29,11 +31,17 @@ public class Principal {
                     case 1:
                         (new MenuSeries()).menu();
                         break;
+                    case 2:
+                        // (new MenuEpisodios()).menu();
+                        break;
+                    case 3:
+                        // (new MenuAtoress()).menu();
+                        break;
                     case 9:
-                        // (new MenuSeries()).povoar();
+                        // (new Menu()).povoar();
                         break;
                     case 0:
-                        break;
+                        return;
                     default:
                         System.out.println("Opção inválida!");
                         break;

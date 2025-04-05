@@ -27,7 +27,7 @@ public class MenuSeries {
             System.out.println("2 - Buscar");
             System.out.println("3 - Alterar");
             System.out.println("4 - Excluir");
-            System.out.println("0 - Voltar");
+            System.out.println("0 - Retornar ao menu anterior");
 
             System.out.print("\nOpção: ");
             try {
