@@ -13,17 +13,17 @@ public class Serie implements EntidadeArquivo {
     private String nome;
     private String sinopse;
     private String streaming;
-    private int anoLancamento;
+    private short anoLancamento;
 
     public Serie() throws Exception {
-        this(-1, "", "", "", 0);
+        this(-1, "", "", "", (short) 0);
     }
 
-    public Serie(String nome, String sinopse, String streaming, int anoLancamento) throws Exception {
+    public Serie(String nome, String sinopse, String streaming, short anoLancamento) throws Exception {
         this(-1, nome, sinopse, streaming, anoLancamento);
     }
 
-    public Serie(int id, String nome, String sinopse, String streaming, int anoLancamento) throws Exception {
+    public Serie(int id, String nome, String sinopse, String streaming, short anoLancamento) throws Exception {
         this.id = id;
         this.nome = nome;
         this.sinopse = sinopse;
@@ -63,11 +63,11 @@ public class Serie implements EntidadeArquivo {
         this.streaming = streaming;
     }
 
-    public int getAnoLancamento() {
+    public short getAnoLancamento() {
         return anoLancamento;
     }
 
-    public void setAnoLancamento(int anoLancamento) {
+    public void setAnoLancamento(short anoLancamento) {
         this.anoLancamento = anoLancamento;
     }
 
@@ -79,7 +79,7 @@ public class Serie implements EntidadeArquivo {
         dos.writeUTF(nome);
         dos.writeUTF(sinopse);
         dos.writeUTF(streaming);
-        dos.writeInt(anoLancamento);
+        dos.writeShort(anoLancamento);
 
         return baos.toByteArray();
     }
@@ -92,6 +92,6 @@ public class Serie implements EntidadeArquivo {
         nome = dis.readUTF();
         sinopse = dis.readUTF();
         streaming = dis.readUTF();
-        anoLancamento = dis.readInt();
+        anoLancamento = dis.readShort();
     }
 }

@@ -99,8 +99,8 @@ public class MenuSeries {
         String nome = "";
         String sinopse = "";
         String streaming = "";
-        String anoLancamento = "";
-        int anoLancamentoInt = 0;
+        String anoLancamentoInput = "";
+        short anoLancamento = 0;
         boolean dadosCorretos = false;
 
         dadosCorretos = false;
@@ -136,12 +136,14 @@ public class MenuSeries {
         dadosCorretos = false;
         do {
             System.out.print("Ano de Lançamento (ano min. é 1926): ");
-            anoLancamento = console.nextLine();
-            if (!anoLancamento.isEmpty()) {
+            anoLancamentoInput = console.nextLine();
+            if (!anoLancamentoInput.isEmpty()) {
                 try {
-                    anoLancamentoInt = Integer.parseInt(anoLancamento);
-                    if (anoLancamentoInt >= 1926 && anoLancamentoInt <= LocalDate.now().getYear()) // ano da invenção da
-                                                                                                   // televisão
+                    anoLancamento = Short.parseShort(anoLancamentoInput);
+                    if (anoLancamento >= 1926 && anoLancamento <= LocalDate.now().getYear()) // ano da
+                                                                                             // invenção
+                                                                                             // da
+                        // televisão
                         dadosCorretos = true;
                     else
                         System.err.println(
@@ -156,7 +158,7 @@ public class MenuSeries {
         char resp = console.nextLine().charAt(0);
         if (resp == 'S' || resp == 's') {
             try {
-                Serie serie = new Serie(nome, sinopse, streaming, anoLancamentoInt);
+                Serie serie = new Serie(nome, sinopse, streaming, anoLancamento);
                 arqSeries.create(serie);
                 System.out.println("Série incluída com sucesso.");
             } catch (Exception e) {
@@ -248,7 +250,7 @@ public class MenuSeries {
                     novoAnoDeLancamento = console.nextLine();
                     if (!novoAnoDeLancamento.isEmpty()) {
                         try {
-                            int anoLancamento = Integer.parseInt(novoAnoDeLancamento);
+                            short anoLancamento = Short.parseShort(novoAnoDeLancamento);
                             if (anoLancamento >= 1926 && anoLancamento <= LocalDate.now().getYear()) {
                                 serie.setAnoLancamento(anoLancamento);
                                 dadosCorretos = true;
