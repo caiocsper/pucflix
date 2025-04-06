@@ -15,11 +15,13 @@ public class Arquivo<T extends EntidadeArquivo> {
         this.nomeEntidade = ne;
         this.construtor = c;
         File f = new File("./dados");
-        if (!f.exists())
+        if (!f.exists()) {
             f.mkdir();
+        }
         f = new File("./dados/" + nomeEntidade);
-        if (!f.exists())
+        if (!f.exists()) {
             f.mkdir();
+        }
         arquivo = new RandomAccessFile("./dados/" + nomeEntidade + "/" + nomeEntidade + ".db", "rw");
         if (arquivo.length() < TAMANHO_CABECALHO) {
             arquivo.writeByte(2); // versão do Arquivo
@@ -64,11 +66,13 @@ public class Arquivo<T extends EntidadeArquivo> {
 
     public T read(int id) throws Exception {
         ParIDEndereco pie = indiceDireto.read(id);
-        if (pie == null)
+        if (pie == null) {
             return null;
+        }
         long endereco = pie.getEndereco();
-        if (endereco == -1)
+        if (endereco == -1) {
             return null;
+        }
 
         arquivo.seek(endereco);
         byte lapide = arquivo.readByte();
@@ -78,19 +82,22 @@ public class Arquivo<T extends EntidadeArquivo> {
             arquivo.read(dados);
             T entidade = construtor.newInstance();
             entidade.fromByteArray(dados);
-            if (entidade.getID() == id)
+            if (entidade.getID() == id) {
                 return entidade;
+            }
         }
         return null;
     }
 
     public boolean delete(int id) throws Exception {
         ParIDEndereco pie = indiceDireto.read(id);
-        if (pie == null)
+        if (pie == null) {
             return false;
+        }
         long endereco = pie.getEndereco();
-        if (endereco == -1)
+        if (endereco == -1) {
             return false;
+        }
 
         arquivo.seek(endereco);
         byte lapide = arquivo.readByte();
@@ -113,11 +120,13 @@ public class Arquivo<T extends EntidadeArquivo> {
 
     public boolean update(T novaEntidade) throws Exception {
         ParIDEndereco pie = indiceDireto.read(novaEntidade.getID());
-        if (pie == null)
+        if (pie == null) {
             return false;
+        }
         long endereco = pie.getEndereco();
-        if (endereco == -1)
+        if (endereco == -1) {
             return false;
+        }
 
         arquivo.seek(endereco);
         byte lapide = arquivo.readByte();
@@ -216,10 +225,11 @@ public class Arquivo<T extends EntidadeArquivo> {
             tamanho = arquivo.readShort();
             proximo = arquivo.readLong();
             if (lapide == '*' && tamanho >= tamanhoNecessario) {
-                if (anterior == 5)
-                    arquivo.seek(anterior);
-                else
+                if (anterior == 5) {
+                    arquivo.seek(anterior); 
+                }else {
                     arquivo.seek(anterior + 3);
+                }
                 arquivo.writeLong(proximo);
                 break;
             }
@@ -229,4 +239,8 @@ public class Arquivo<T extends EntidadeArquivo> {
         return endereco;
     }
 
+    public int getLastID() throws IOException {
+        arquivo.seek(1);
+        return arquivo.readInt();
+    }
 }
