@@ -1,14 +1,16 @@
-import java.util.Scanner;
-import visao.MenuSeries;
 
-public class Principal {
+import java.util.Scanner;
+import utils.Seeder;
+import view.*;
+
+public class Main {
 
     public static void main(String[] args) {
         Scanner console;
         try {
 
             console = new Scanner(System.in);
-            int opcao;
+            int option;
             do {
 
                 System.out.println("\n\nPUCFlix 1.0");
@@ -16,29 +18,29 @@ public class Principal {
                 System.out.println("> Início");
                 System.out.println("\n1 - Séries");
                 System.out.println("2 - Episódios");
-                System.out.println("3 - Atores");
+                //System.out.println("3 - Atores");
                 System.out.println("9 - Povoar");
                 System.out.println("0 - Sair");
 
                 System.out.print("\nOpção: ");
                 try {
-                    opcao = Integer.valueOf(console.nextLine());
+                    option = Integer.parseInt(console.nextLine());
                 } catch (NumberFormatException e) {
-                    opcao = -1;
+                    option = -1;
                 }
 
-                switch (opcao) {
+                switch (option) {
                     case 1:
-                        (new MenuSeries()).menu();
+                        (new ShowsMenu()).menu();
                         break;
                     case 2:
-                        // (new MenuEpisodios()).menu();
+                        (new EpisodesMenu()).menu();
                         break;
                     case 3:
-                        // (new MenuAtoress()).menu();
+                        // (new ActorsMenu()).menu();
                         break;
                     case 9:
-                        // (new Menu()).povoar();
+                        (new Seeder()).fillDB();
                         break;
                     case 0:
                         return;
@@ -47,7 +49,7 @@ public class Principal {
                         break;
                 }
 
-            } while (opcao != 0);
+            } while (option != 0);
 
         } catch (Exception e) {
             e.printStackTrace();
