@@ -45,7 +45,7 @@ public class ShowsMenu {
                     create();
                     break;
                 case 2:
-                    find();
+                    findByName();
                     break;
                 case 3:
                     update();
@@ -63,7 +63,7 @@ public class ShowsMenu {
         } while (option != 0);
     }
 
-    public void find() {
+    public void findById() {
         System.out.println("\nBusca de série por ID");
         String input;
         int id = 0;
@@ -97,6 +97,46 @@ public class ShowsMenu {
             System.out.println("Erro do sistema. Não foi possível buscar a série!");
             e.printStackTrace();
         }
+    }
+
+    public Show findByName() {
+        System.out.println("\nBusca de série por nome");
+        System.out.print("\nNome: ");
+        String name = console.nextLine();  // Lê o nome digitado pelo usuário
+
+        if (name.isEmpty()) {
+            return null;
+        }
+
+        try {
+            Show[] shows = showsFile.readName(name);  // Chama o método de leitura da classe Arquivo
+            if (shows != null && shows.length > 0) {
+                int n = 1;
+                for (Show show : shows) {
+                    System.out.println((n++) + ": " + show.getName());
+                }
+                System.out.print("Escolha a série: ");
+                int option;
+                do {
+                    try {
+                        option = Integer.parseInt(console.nextLine());
+                    } catch (NumberFormatException e) {
+                        option = -1;
+                    }
+                    if (option <= 0 || option > n - 1) {
+                        System.out.println("Escolha um número entre 1 e " + (n - 1));
+                    }
+                } while (option <= 0 || option > n - 1);
+                read(shows[option - 1]);  // Exibe os detalhes da série encontrado
+                return shows[option - 1];
+            } else {
+                System.out.println("Nenhuma série encontrada.");
+            }
+        } catch (Exception e) {
+            System.out.println("Erro do sistema. Não foi possível buscar as séries!");
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void create() {
@@ -174,31 +214,12 @@ public class ShowsMenu {
 
     public void update() {
         System.out.println("\nAlteração de série");
-        int id = 0;
-        boolean isValid = false;
-
-        do {
-            System.out.print("\nID da série: ");
-
-            if (console.hasNextInt()) {
-                id = console.nextInt();
-                if (id > 0) {
-                    isValid = true;
-                }
-            }
-
-            if (!isValid) {
-                System.out.println("ID inválido. O ID deve ser um número inteiro positivo e não nulo.");
-            }
-
-            console.nextLine(); // Limpar o buffer
-        } while (!isValid);
+        boolean isValid;
 
         try {
             // Tenta ler a série com o ID fornecido
-            Show show = showsFile.read(id);
+            Show show = this.findByName();
             if (show != null) {
-                read(show); // Exibe os dados da série para confirmação
 
                 // Alteração de ISBN
                 String newName;
@@ -304,33 +325,12 @@ public class ShowsMenu {
 
     public void delete() {
         System.out.println("\nExclusão de série");
-        String input;
-        int id = 0;
-        boolean isValid = false;
-
-        do {
-            System.out.print("\nID da série: ");
-            input = console.nextLine();
-            if (!input.isEmpty()) {
-                try {
-                    id = Integer.parseInt(input);
-                    if (id > 0) {
-                        isValid = true;
-                    } else {
-                        System.err.println("ID inválido. O ID deve ser um número inteiro positivo e não nulo");
-                    }
-                } catch (NumberFormatException e) {
-                    System.err.println("ID inválido. Por favor, insira um número válido.");
-                }
-            }
-        } while (!isValid);
 
         try {
             // Tenta ler a série com o ID fornecido
-            Show show = showsFile.read(id);
+            Show show = this.findByName();
             if (show != null) {
-                System.out.println("Série encontrada:");
-                read(show); // Exibe os dados da série para confirmação
+                int id = show.getID();
                 List<Episode> episodes = episodesFile.findEpisodes(show.getID());
                 if (!episodes.isEmpty()) {
                     System.out.println("Não é possível excluir uma série vinculada a " + episodes.size() + " episódios.");
