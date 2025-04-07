@@ -9,13 +9,13 @@ import model.*;
 
 public class EpisodesMenu {
 
-    ShowsFile showsFile;
+    ShowsMenu showsMenu;
     EpisodesFile episodesFile;
     private static final Scanner console = new Scanner(System.in);
     private int showID = 0;
 
     public EpisodesMenu() throws Exception {
-        showsFile = new ShowsFile();
+        showsMenu = new ShowsMenu();
         episodesFile = new EpisodesFile();
     }
 
@@ -23,22 +23,14 @@ public class EpisodesMenu {
 
         int option;
 
-        System.out.println("Digite o ID da série: ");
-        do {
-            try {
-                showID = Integer.parseInt(console.nextLine());
-            } catch (NumberFormatException e) {
-                System.out.println("ID inválido. O ID deve ser um número inteiro não nulo.");
-            }
-        } while (showID <= 0);
-
         try {
-            Show show = showsFile.read(showID);
+            Show show = showsMenu.findByName();
 
             if (show == null) {
-                System.out.println("Série não encontrada.");
                 return;
             }
+
+            showID = show.getID();
         } catch (Exception e) {
             System.out.println("Erro ao ler série.");
         }
@@ -67,7 +59,7 @@ public class EpisodesMenu {
                     create();
                     break;
                 case 2:
-                    find();
+                    findByName();
                     break;
                 case 3:
                     update();
@@ -85,7 +77,7 @@ public class EpisodesMenu {
         } while (option != 0);
     }
 
-    public void find() {
+    public void findById() {
         System.out.println("\nBusca de episódio por ID");
         String input;
         int id = 0;
@@ -119,6 +111,46 @@ public class EpisodesMenu {
             System.out.println("Erro do sistema. Não foi possível buscar o episódio!");
             e.printStackTrace();
         }
+    }
+
+    public Episode findByName() {
+        System.out.println("\nBusca de episódio por nome");
+        System.out.print("\nNome: ");
+        String name = console.nextLine();  // Lê o nome digitado pelo usuário
+
+        if (name.isEmpty()) {
+            return null;
+        }
+
+        try {
+            Episode[] episodes = episodesFile.readName(name, showID);  // Chama o método de leitura da classe Arquivo
+            if (episodes != null && episodes.length > 0) {
+                int n = 1;
+                for (Episode episode : episodes) {
+                    System.out.println((n++) + ": " + episode.getName());
+                }
+                System.out.print("Escolha o episódio: ");
+                int option;
+                do {
+                    try {
+                        option = Integer.parseInt(console.nextLine());
+                    } catch (NumberFormatException e) {
+                        option = -1;
+                    }
+                    if (option <= 0 || option > n - 1) {
+                        System.out.println("Escolha um número entre 1 e " + (n - 1));
+                    }
+                } while (option <= 0 || option > n - 1);
+                read(episodes[option - 1]);  // Exibe os detalhes da série encontrado
+                return episodes[option - 1];
+            } else {
+                System.out.println("Nenhum episódio encontrado.");
+            }
+        } catch (Exception e) {
+            System.out.println("Erro do sistema. Não foi possível buscar os episódios!");
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void create() {
@@ -205,31 +237,12 @@ public class EpisodesMenu {
 
     public void update() {
         System.out.println("\nAlteração de episódio");
-        int id = 0;
-        boolean isValid = false;
-
-        do {
-            System.out.print("\nID da episódio: ");
-
-            if (console.hasNextInt()) {
-                id = console.nextInt();
-                if (id > 0) {
-                    isValid = true;
-                }
-            }
-
-            if (!isValid) {
-                System.out.println("ID inválido. O ID deve ser um número inteiro positivo e não nulo.");
-            }
-
-            console.nextLine(); // Limpar o buffer
-        } while (!isValid);
+        boolean isValid;
 
         try {
             // Tenta ler o episódio com o ID fornecido
-            Episode episode = episodesFile.read(id);
+            Episode episode = this.findByName();
             if (episode != null && episode.getShowID() == showID) {
-                read(episode); // Exibe os dados do episódio para confirmação
 
                 // Alteração de ISBN
                 String newName;
@@ -330,8 +343,6 @@ public class EpisodesMenu {
                     System.out.println("Alterações canceladas.");
                 }
                 console.nextLine(); // Limpar o buffer
-            } else {
-                System.out.println("Episódio não encontrado.");
             }
         } catch (Exception e) {
             System.out.println("Erro do sistema. Não foi possível alterar o episódio!");
@@ -342,33 +353,12 @@ public class EpisodesMenu {
 
     public void delete() {
         System.out.println("\nExclusão de episódios");
-        String input;
-        int id = 0;
-        boolean isValid = false;
-
-        do {
-            System.out.print("\nID do episódio: ");
-            input = console.nextLine();
-            if (!input.isEmpty()) {
-                try {
-                    id = Integer.parseInt(input);
-                    if (id > 0) {
-                        isValid = true;
-                    } else {
-                        System.err.println("ID inválido. O ID deve ser um número inteiro positivo e não nulo");
-                    }
-                } catch (NumberFormatException e) {
-                    System.err.println("ID inválido. Por favor, insira um número válido.");
-                }
-            }
-        } while (!isValid);
 
         try {
             // Tenta ler o episódio com o ID fornecido
-            Episode episode = episodesFile.read(id);
+            Episode episode = this.findByName();
             if (episode != null && episode.getShowID() == showID) {
-                System.out.println("Episódio encontrado:");
-                read(episode); // Exibe os dados do episódio para confirmação
+                int id = episode.getID();
                 System.out.print("\nConfirma a exclusão do episódio? (S/N) ");
                 char confirmation = console.next().charAt(0); // Lê a resposta do usuário
 
@@ -384,8 +374,6 @@ public class EpisodesMenu {
                     System.out.println("Exclusão cancelada.");
                 }
                 console.nextLine(); // Limpar o buffer
-            } else {
-                System.out.println("Episódio não encontrado.");
             }
         } catch (Exception e) {
             System.out.println("Erro do sistema. Não foi possível excluir o episódio!");
