@@ -226,8 +226,8 @@ public class Arquivo<T extends EntidadeArquivo> {
             proximo = arquivo.readLong();
             if (lapide == '*' && tamanho >= tamanhoNecessario) {
                 if (anterior == 5) {
-                    arquivo.seek(anterior); 
-                }else {
+                    arquivo.seek(anterior);
+                } else {
                     arquivo.seek(anterior + 3);
                 }
                 arquivo.writeLong(proximo);
@@ -237,10 +237,5 @@ public class Arquivo<T extends EntidadeArquivo> {
             endereco = proximo;
         }
         return endereco;
-    }
-
-    public int getLastID() throws IOException {
-        arquivo.seek(1);
-        return arquivo.readInt();
     }
 }

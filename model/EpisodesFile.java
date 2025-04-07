@@ -41,8 +41,8 @@ public class EpisodesFile extends Arquivo<Episode> {
                     episodes.add(episode);
                 }
             }
-            Episode[] episodesReturn = new Episode[episodes.size()];
-            return episodes.toArray(episodesReturn);
+            Episode[] episodesArr = new Episode[episodes.size()];
+            return episodes.toArray(episodesArr);
         } else {
             return null;
         }
@@ -77,18 +77,7 @@ public class EpisodesFile extends Arquivo<Episode> {
         return false;
     }
 
-    public List<Episode> findEpisodes(int showId) throws Exception {
-        List<Episode> episodes = new ArrayList<>();
-        int lastID = this.getLastID();
-
-        for (int id = 1; id <= lastID; id++) {
-            Episode episode = this.read(id);
-
-            if (episode != null && episode.getShowID() == showId) {
-                episodes.add(episode);
-            }
-        }
-
-        return episodes;
+    public boolean isEmpty(int showId) throws Exception {
+        return indexShowEpisode.read(new ParIdId(showId, -1)).isEmpty();
     }
 }

@@ -1,9 +1,7 @@
 package view;
 
-import entities.Episode;
 import entities.Show;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Scanner;
 import model.*;
 
@@ -331,9 +329,9 @@ public class ShowsMenu {
             Show show = this.findByName();
             if (show != null) {
                 int id = show.getID();
-                List<Episode> episodes = episodesFile.findEpisodes(show.getID());
-                if (!episodes.isEmpty()) {
-                    System.out.println("Não é possível excluir uma série vinculada a " + episodes.size() + " episódios.");
+
+                if (!episodesFile.isEmpty(show.getID())) {
+                    System.out.println("Não é possível excluir uma série vinculada a um ou mais episódios.");
                     return;
                 }
                 System.out.print("\nConfirma a exclusão da série? (S/N) ");
