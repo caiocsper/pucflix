@@ -72,7 +72,7 @@ java Main
 ---
 
 
-## Checklist da Atividade
+## Checklist
 
 - [x] As operações de inclusão, busca, alteração e exclusão de séries estão implementadas? Sim
 - [x] As operações de inclusão, busca, alteração e exclusão de episódios por série estão ok? Sim
