@@ -10,10 +10,7 @@ public class ShowsFile extends Arquivo<Show> {
 
     public ShowsFile() throws Exception {
         super("shows", Show.class.getConstructor());
-        indexName = new ArvoreBMais<>(
-                ParNomeId.class.getConstructor(),
-                5,
-                "./dados/" + this.nomeEntidade + "/indexNames.db");
+        indexName = new ArvoreBMais<>(ParNomeId.class.getConstructor(), 5, "./dados/" + this.nomeEntidade + "/indexNames.db");
     }
 
     @Override
