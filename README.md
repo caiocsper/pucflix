@@ -1,7 +1,7 @@
-# PUCFlix - Trabalho Prático 1 (AEDS III)
+# PUCFlix - Trabalho Prático 1
 
 ## Objetivo
-Implementar um sistema de gerenciamento de séries de streaming com seus respectivos episódios, utilizando um CRUD genérico, Tabela Hash Extensível e Árvore B+ para gerenciamento de dados e índices.
+Praticar e melhorar a compreensão de como implementar estruturas de dados para administrar dados de arquivos persistentes através de um sistema de gerenciamento de séries e seus episódios.
 
 ---
 
