@@ -42,13 +42,7 @@ public class ShowsMenu {
 
             switch (option) {
                 case 1 -> create();
-                case 2 -> {
-                    Prompt.clearPrompt();
-                    Show hasShow = findByName("\nBusca de série por nome");
-                    if (hasShow != null)
-                        read(hasShow);
-                    prompt.displayReturnMessage();
-                }
+                case 2 -> findByName();
                 case 3 -> update();
                 case 4 -> delete();
                 case 0 -> { return; }
@@ -58,40 +52,12 @@ public class ShowsMenu {
         } while (option != 0);
     }
 
-    public void findById() {
-        System.out.println("\nBusca de série por ID");
-        String input;
-        int id = 0;
-        boolean isValid = false;
-
-        do {
-            System.out.print("\nID da série: ");
-            input = console.nextLine();
-            if (!input.isEmpty()) {
-                try {
-                    id = Integer.parseInt(input);
-                    if (id > 0) {
-                        isValid = true;
-                    } else {
-                        System.err.println("ID inválido. O ID deve ser um número inteiro positivo e não nulo");
-                    }
-                } catch (NumberFormatException e) {
-                    System.err.println("ID inválido. Por favor, insira um número válido.");
-                }
-            }
-        } while (!isValid);
-
-        try {
-            Show show = showsFile.read(id); // Chama o método de leitura da classe Arquivo
-            if (show != null) {
-                read(show); // Exibe os detalhes da série encontrada
-            } else {
-                System.out.println("Série não encontrada.");
-            }
-        } catch (Exception e) {
-            System.out.println("Erro do sistema. Não foi possível buscar a série!");
-            e.printStackTrace();
-        }
+    public void findByName() {
+        Prompt.clearPrompt();
+        Show hasShow = findByName("\nBusca de série por nome");
+        if (hasShow != null)
+            read(hasShow);
+        prompt.displayReturnMessage();
     }
 
     public Show findByName(String message) {
