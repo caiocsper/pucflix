@@ -1,5 +1,6 @@
 
 import java.util.Scanner;
+import utils.Prompt;
 import utils.Seeder;
 import view.*;
 
@@ -12,7 +13,7 @@ public class Main {
             console = new Scanner(System.in);
             int option;
             do {
-
+                Prompt.clearPrompt();
                 System.out.println("\n\nPUCFlix 1.0");
                 System.out.println("-----------");
                 System.out.println("> Início");
@@ -30,23 +31,12 @@ public class Main {
                 }
 
                 switch (option) {
-                    case 1:
-                        (new ShowsMenu()).menu();
-                        break;
-                    case 2:
-                        (new EpisodesMenu()).menu();
-                        break;
-                    case 3:
-                        // (new ActorsMenu()).menu();
-                        break;
-                    case 9:
-                        (new Seeder()).fillDB();
-                        break;
-                    case 0:
-                        return;
-                    default:
-                        System.out.println("Opção inválida!");
-                        break;
+                    case 1 -> (new ShowsMenu()).menu();
+                    case 2 -> (new EpisodesMenu()).menu();
+                    // case 3 -> (new ActorsMenu()).menu();
+                    case 9 -> (new Seeder()).fillDB();
+                    case 0 -> { return; }
+                    default -> System.out.println("Opção inválida!");
                 }
 
             } while (option != 0);

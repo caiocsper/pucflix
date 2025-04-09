@@ -1,30 +1,36 @@
 package view;
 
+import controller.ShowsController;
 import entities.Show;
 import java.time.LocalDate;
 import java.util.Scanner;
 import model.*;
+import utils.Prompt;
 
 public class ShowsMenu {
 
     ShowsFile showsFile;
     EpisodesFile episodesFile;
+    ShowsController showsController;
     private static final Scanner console = new Scanner(System.in);
+    private final Prompt prompt;
 
     public ShowsMenu() throws Exception {
         showsFile = new ShowsFile();
         episodesFile = new EpisodesFile();
+        showsController = new ShowsController();
+        prompt = new Prompt(console, "série");
     }
 
     public void menu() {
-
         int option;
-        do {
 
+        do {
+            Prompt.clearPrompt();
             System.out.println("\n\nPUCFlix 1.0");
             System.out.println("-----------");
             System.out.println("> Início > Séries");
-            System.out.println("\n1 - Incluir");
+            System.out.println("\n1 - Adicionar");
             System.out.println("2 - Buscar");
             System.out.println("3 - Alterar");
             System.out.println("4 - Excluir");
@@ -32,30 +38,21 @@ public class ShowsMenu {
 
             System.out.print("\nOpção: ");
 
-            try {
-                option = Integer.parseInt(console.nextLine());
-            } catch (NumberFormatException e) {
-                option = -1;
-            }
+            option = prompt.getInt("Opção inválida");
 
             switch (option) {
-                case 1:
-                    create();
-                    break;
-                case 2:
-                    findByName();
-                    break;
-                case 3:
-                    update();
-                    break;
-                case 4:
-                    delete();
-                    break;
-                case 0:
-                    break;
-                default:
-                    System.out.println("Opção inválida!");
-                    break;
+                case 1 -> create();
+                case 2 -> {
+                    Prompt.clearPrompt();
+                    Show hasShow = findByName("\nBusca de série por nome");
+                    if (hasShow != null)
+                        read(hasShow);
+                    this.displayReturnMessage();
+                }
+                case 3 -> update();
+                case 4 -> delete();
+                case 0 -> { return; }
+                default -> System.out.println("Opção inválida!");
             }
 
         } while (option != 0);
@@ -97,276 +94,159 @@ public class ShowsMenu {
         }
     }
 
-    public Show findByName() {
-        System.out.println("\nBusca de série por nome");
+    public Show findByName(String message) {
+        Show[] hasShows;
+        System.out.println(message);
         System.out.print("\nNome: ");
-        String name = console.nextLine();  // Lê o nome digitado pelo usuário
-
-        if (name.isEmpty()) {
-            return null;
-        }
 
         try {
-            Show[] shows = showsFile.readName(name);  // Chama o método de leitura da classe Arquivo
-            if (shows != null && shows.length > 0) {
-                int n = 1;
-                for (Show show : shows) {
+            hasShows = showsController.findByName(prompt.getString());
+            
+            if (hasShows == null)
+                System.out.println("Nenhuma série encontrada.");
+            else {
+                int n = 1, option;
+
+                for (Show show : hasShows) {
                     System.out.println((n++) + ": " + show.getName());
                 }
-                System.out.print("Escolha a série: ");
-                int option;
+
                 do {
-                    try {
-                        option = Integer.parseInt(console.nextLine());
-                    } catch (NumberFormatException e) {
-                        option = -1;
-                    }
-                    if (option <= 0 || option > n - 1) {
-                        System.out.println("Escolha um número entre 1 e " + (n - 1));
-                    }
+                    System.out.print("\nEscolha uma série de acordo com seu número listado acima: ");
+                    option = prompt.getInt("Número inválido!");
                 } while (option <= 0 || option > n - 1);
-                read(shows[option - 1]);  // Exibe os detalhes da série encontrado
-                return shows[option - 1];
-            } else {
-                System.out.println("Nenhuma série encontrada.");
+
+                return hasShows[option - 1];
             }
         } catch (Exception e) {
-            System.out.println("Erro do sistema. Não foi possível buscar as séries!");
-            e.printStackTrace();
+            System.out.println("Erro do sistema. Não foi possível buscar séries!");
         }
+
         return null;
     }
 
     public void create() {
-        System.out.println("\nInclusão de série");
-        String name = "";
-        String summary = "";
-        String streamingOn = "";
-        String releaseYearInput;
-        short releaseYear = 0;
-        boolean isValid = false;
+        Prompt.clearPrompt();
+        System.out.println("\nCriação de série");
+        String  name        = prompt.promptString("Nome", 4, false),
+                summary     = prompt.promptString("Sinopse", 20, false),
+                streamingOn = prompt.promptString("Streaming", 4, false);
+        short   releaseYear = prompt.promptShort("Ano de lançamento", (short) 1926, (short) LocalDate.now().getYear(), false);
 
-        do {
-            System.out.print("Nome (min. de 4 caracteres): ");
-            name = console.nextLine();
-            if (name.length() >= 4) {
-                isValid = true;
-            } else {
-                System.err.println("O nome da série deve ter no mínimo 4 caracteres.");
-            }
-        } while (!isValid);
+        if (!prompt.promptConfirmation("Confirma a inclusão da série? (S/N) "))
+            return;
 
-        isValid = false;
-        do {
-            System.out.print("Sinopse (min. de 20 caracteres): ");
-            summary = console.nextLine();
-            if (summary.length() >= 20) {
-                isValid = true;
-            } else {
-                System.err.println("A sinopse deve ter no mínimo 20 caracteres.");
-            }
-        } while (!isValid);
-
-        isValid = false;
-        do {
-            System.out.print("Streaming (min. de 4 caracteres): ");
-            streamingOn = console.nextLine();
-            if (streamingOn.length() >= 4) {
-                isValid = true;
-            } else {
-                System.err.println("O nome da plataforma de streaming deve ter no mínimo 4 caracteres.");
-            }
-        } while (!isValid);
-
-        isValid = false;
-        do {
-            System.out.print("Ano de Lançamento (ano min. é 1926): ");
-            releaseYearInput = console.nextLine();
-            if (!releaseYearInput.isEmpty()) {
-                try {
-                    releaseYear = Short.parseShort(releaseYearInput);
-                    if (releaseYear >= 1926 && releaseYear <= LocalDate.now().getYear()) // ano da invenção da televisão
-                    {
-                        isValid = true;
-                    } else {
-                        System.err.println("Ano de Lançamento inválido. Insira um ano entre 1926 e " + LocalDate.now().getYear());
-                    }
-                } catch (NumberFormatException e) {
-                    System.err.println("Ano de Lançamento inválido. Por favor, insira um ano válido.");
-                }
-            }
-        } while (!isValid);
-
-        System.out.print("\nConfirma a inclusão da série? (S/N) ");
-        char confirmation = console.nextLine().charAt(0);
-        if (confirmation == 'S' || confirmation == 's') {
-            try {
-                Show show = new Show(name, summary, streamingOn, releaseYear);
-                showsFile.create(show);
-                System.out.println("Série incluída com sucesso.");
-            } catch (Exception e) {
-                System.out.println("Erro do sistema. Não foi possível incluir a série!");
-            }
+        try {
+            Show show = new Show(name, summary, streamingOn, releaseYear);
+            showsController.create(show);
+            System.out.println("Série incluída com sucesso.");
+        } catch (Exception e) {
+            System.out.println("Erro do sistema. Não foi possível incluir a série!");
         }
+
+        this.displayReturnMessage();
     }
 
     public void update() {
+        Prompt.clearPrompt();
         System.out.println("\nAlteração de série");
-        boolean isValid;
 
         try {
-            // Tenta ler a série com o ID fornecido
-            Show show = this.findByName();
-            if (show != null) {
+            Show show = this.findByName("Buscar série, a ser alterada, por nome: ");
 
-                // Alteração de ISBN
-                String newName;
-                isValid = false;
-                do {
-                    System.out.print("Novo nome (deixe em branco para manter o anterior): ");
-                    newName = console.nextLine();
-                    if (!newName.isEmpty()) {
-                        if (newName.length() >= 4) {
-                            show.setName(newName); // Atualiza o ISBN se fornecido
-                            isValid = true;
-                        } else {
-                            System.err.println("O nome da série deve ter no mínimo 4 caracteres.");
-                        }
-                    } else {
-                        isValid = true;
-                    }
-                } while (!isValid);
+            if (show == null)
+                System.out.println("\nSérie não encontrada.");
+            else {
+                System.out.println("\nSérie encontrada!");
+                this.read(show);
+                System.out.println("");
 
-                // Alteração de titulo
-                String newSummary;
-                isValid = false;
-                do {
-                    System.out.print("Nova sinopse (deixe em branco para manter o anterior): ");
-                    newSummary = console.nextLine();
-                    if (!newSummary.isEmpty()) {
-                        if (newSummary.length() >= 20) {
-                            show.setSummary(newSummary); // Atualiza o título se fornecido
-                            isValid = true;
-                        } else {
-                            System.err.println("A sinopse da série deve ter no mínimo 20 caracteres.");
-                        }
-                    } else {
-                        isValid = true;
-                    }
-                } while (!isValid);
+                String  name        = prompt.promptString("Nome", 4, true),
+                        summary     = prompt.promptString("Sinopse", 20, true),
+                        streamingOn = prompt.promptString("Streaming", 4, true);
+                short   releaseYear = prompt.promptShort("Ano de lançamento", (short) 1926, (short) LocalDate.now().getYear(), true);
 
-                // Alteração de autor
-                String newStreamingOn;
-                isValid = false;
-                do {
-                    System.out.print("Nova plataforma de streaming (deixe em branco para manter o anterior): ");
-                    newStreamingOn = console.nextLine();
-                    if (!newStreamingOn.isEmpty()) {
-                        if (newStreamingOn.length() >= 4) {
-                            show.setStreamingOn(newStreamingOn); // Atualiza o título se fornecido
-                            isValid = true;
-                        } else {
-                            System.err.println("O nome da plataforma de streaming deve ter no mínimo 4 caracteres.");
-                        }
-                    } else {
-                        isValid = true;
-                    }
-                } while (!isValid);
+                if (name != null) show.setName(name);
+                if (summary != null) show.setSummary(summary);
+                if (streamingOn != null) show.setStreamingOn(streamingOn);
+                if (releaseYear >= (short) 1926) show.setReleaseYear(releaseYear);
 
-                // Alteração da edição
-                String newReleaseYear;
-                isValid = false;
-                do {
-                    System.out.print("Novo ano de lançamento (deixe em branco para manter a anterior): ");
-                    newReleaseYear = console.nextLine();
-                    if (!newReleaseYear.isEmpty()) {
-                        try {
-                            short releaseYear = Short.parseShort(newReleaseYear);
-                            if (releaseYear >= 1926 && releaseYear <= LocalDate.now().getYear()) {
-                                show.setReleaseYear(releaseYear);
-                                isValid = true;
-                            } else {
-                                System.err.println("Ano de Lançamento inválido. Insira um ano entre 1926 e " + LocalDate.now().getYear());
-                            }
-                        } catch (NumberFormatException e) {
-                            System.err.println("Ano de Lançamento inválido. Por favor, insira um ano válido.");
-                        }
-                    } else {
-                        isValid = true;
-                    }
-                } while (!isValid);
-
-                // Confirmação da alteração
-                System.out.print("\nConfirma as alterações? (S/N) ");
-                char confirmation = console.next().charAt(0);
-                if (confirmation == 'S' || confirmation == 's') {
-                    // Salva as alterações no arquivo
-                    boolean isUpdated = showsFile.update(show);
-                    if (isUpdated) {
-                        System.out.println("Série alterada com sucesso.");
-                    } else {
-                        System.out.println("Erro ao alterar a série.");
-                    }
-                } else {
+                if (!prompt.promptConfirmation("Confirma as alterações? (S/N) ")) {
                     System.out.println("Alterações canceladas.");
+                    return;
                 }
-                console.nextLine(); // Limpar o buffer
-            } else {
-                System.out.println("Série não encontrada.");
+                
+                boolean isUpdated = showsController.update(show);
+
+                if (!isUpdated) {
+                    System.out.println("Erro ao alterar a série.");
+                    return;
+                }
+                
+                System.out.println("Série alterada com sucesso.");
             }
         } catch (Exception e) {
             System.out.println("Erro do sistema. Não foi possível alterar a série!");
-            e.printStackTrace();
         }
 
+        this.displayReturnMessage();
     }
 
     public void delete() {
+        Prompt.clearPrompt();
         System.out.println("\nExclusão de série");
 
-        try {
-            // Tenta ler a série com o ID fornecido
-            Show show = this.findByName();
-            if (show != null) {
-                int id = show.getID();
+        Show show = this.findByName("Buscar série, a ser excluida, por nome: ");
 
+        if (show == null)
+            System.out.println("Série não encontrado.");
+        else {
+            System.out.println("Série encontrada!");
+            read(show);
+            int id = show.getID();
+            try {
                 if (!episodesFile.isEmpty(show.getID())) {
                     System.out.println("Não é possível excluir uma série vinculada a um ou mais episódios.");
                     return;
                 }
-                System.out.print("\nConfirma a exclusão da série? (S/N) ");
-                char confirmation = console.next().charAt(0); // Lê a resposta do usuário
 
-                if (confirmation == 'S' || confirmation == 's') {
-                    boolean isDeleted = showsFile.delete(id); // Chama o método de exclusão no arquivo
-                    if (isDeleted) {
-                        System.out.println("Série excluída com sucesso.");
-                    } else {
-                        System.out.println("Erro ao excluir a série.");
-                    }
-
-                } else {
+                if (!prompt.promptConfirmation("\nConfirma a exclusão da série? (S/N) ")) {
                     System.out.println("Exclusão cancelada.");
+                    return;
                 }
-                console.nextLine(); // Limpar o buffer
-            } else {
-                System.out.println("Série não encontrado.");
+
+                boolean isDeleted = showsController.delete(id);
+
+                if (!isDeleted) {
+                    System.out.println("Erro ao excluir a série.");
+                    return;
+                }
+
+                System.out.println("Série excluída com sucesso.");
+            } catch (Exception e) {
+                System.out.println("Erro do sistema. Não foi possível excluir a série!");
             }
-        } catch (Exception e) {
-            System.out.println("Erro do sistema. Não foi possível excluir a série!");
-            e.printStackTrace();
+
+            this.displayReturnMessage();
         }
+        
     }
 
     public void read(Show show) {
-        if (show != null) {
-            System.out.println("----------------------");
-            System.out.printf("ID..................: %s%n", show.getID());
-            System.out.printf("Nome................: %s%n", show.getName());
-            System.out.printf("Sinopse.............: %s%n", show.getSummary());
-            System.out.printf("Streaming...........: %s%n", show.getStreamingOn());
-            System.out.printf("Ano de Lançamento...: %d%n", show.getReleaseYear());
-            System.out.println("----------------------");
-        }
+        if (show == null)
+            return;
+
+        System.out.println("\n----------------------");
+        System.out.printf("ID..................: %s%n", show.getID());
+        System.out.printf("Nome................: %s%n", show.getName());
+        System.out.printf("Sinopse.............: %s%n", show.getSummary());
+        System.out.printf("Streaming...........: %s%n", show.getStreamingOn());
+        System.out.printf("Ano de Lançamento...: %d%n", show.getReleaseYear());
+        System.out.println("----------------------");
+    }
+
+    private void displayReturnMessage() {
+        System.out.println("\nPressione \"Enter\" para retornar ao menu");
+        console.nextLine(); // Limpar Buffer
     }
 }

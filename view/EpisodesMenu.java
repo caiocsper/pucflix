@@ -24,7 +24,7 @@ public class EpisodesMenu {
         int option;
 
         try {
-            Show show = showsMenu.findByName();
+            Show show = showsMenu.findByName("Buscar série, que deseja consultar episódios, por nome: ");
 
             if (show == null) {
                 return;
