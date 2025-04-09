@@ -70,7 +70,7 @@ public class Prompt {
 
             if ((input >= minValue && input <= maxValue) || (input == -1 && allowEmpty))
                 break;
-            
+
             System.err.println(attributeName + " inválido. Insira um " + attributeName.toLowerCase() + " entre " + minValue + " e " + maxValue);
         } while (input < minValue || input > maxValue);
 
@@ -86,5 +86,10 @@ public class Prompt {
     public static void clearPrompt() {
         System.out.print("\033[H\033[2J");
         System.out.flush();
+    }
+
+    public void displayReturnMessage() {
+        System.out.println("\nPressione \"Enter\" para retornar ao menu");
+        scanner.nextLine(); // Limpar Buffer
     }
 }

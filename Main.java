@@ -8,9 +8,11 @@ public class Main {
 
     public static void main(String[] args) {
         Scanner console;
+        Prompt prompt;
         try {
 
             console = new Scanner(System.in);
+            prompt = new Prompt(console, "");
             int option;
             do {
                 Prompt.clearPrompt();
@@ -24,11 +26,8 @@ public class Main {
                 System.out.println("0 - Sair");
 
                 System.out.print("\nOpção: ");
-                try {
-                    option = Integer.parseInt(console.nextLine());
-                } catch (NumberFormatException e) {
-                    option = -1;
-                }
+
+                option = prompt.getInt("Opção inválida");
 
                 switch (option) {
                     case 1 -> (new ShowsMenu()).menu();
@@ -36,7 +35,10 @@ public class Main {
                     // case 3 -> (new ActorsMenu()).menu();
                     case 9 -> (new Seeder()).fillDB();
                     case 0 -> { return; }
-                    default -> System.out.println("Opção inválida!");
+                    default -> {
+                        System.out.println("Opção inválida!");
+                        prompt.displayReturnMessage();
+                    }
                 }
 
             } while (option != 0);

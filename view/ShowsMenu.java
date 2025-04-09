@@ -47,7 +47,7 @@ public class ShowsMenu {
                     Show hasShow = findByName("\nBusca de série por nome");
                     if (hasShow != null)
                         read(hasShow);
-                    this.displayReturnMessage();
+                    prompt.displayReturnMessage();
                 }
                 case 3 -> update();
                 case 4 -> delete();
@@ -144,7 +144,7 @@ public class ShowsMenu {
             System.out.println("Erro do sistema. Não foi possível incluir a série!");
         }
 
-        this.displayReturnMessage();
+        prompt.displayReturnMessage();
     }
 
     public void update() {
@@ -189,7 +189,7 @@ public class ShowsMenu {
             System.out.println("Erro do sistema. Não foi possível alterar a série!");
         }
 
-        this.displayReturnMessage();
+        prompt.displayReturnMessage();
     }
 
     public void delete() {
@@ -227,7 +227,7 @@ public class ShowsMenu {
                 System.out.println("Erro do sistema. Não foi possível excluir a série!");
             }
 
-            this.displayReturnMessage();
+            prompt.displayReturnMessage();
         }
         
     }
@@ -243,10 +243,5 @@ public class ShowsMenu {
         System.out.printf("Streaming...........: %s%n", show.getStreamingOn());
         System.out.printf("Ano de Lançamento...: %d%n", show.getReleaseYear());
         System.out.println("----------------------");
-    }
-
-    private void displayReturnMessage() {
-        System.out.println("\nPressione \"Enter\" para retornar ao menu");
-        console.nextLine(); // Limpar Buffer
     }
 }
