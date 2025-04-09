@@ -9,14 +9,12 @@ import utils.Prompt;
 
 public class ShowsMenu {
 
-    ShowsFile showsFile;
     EpisodesFile episodesFile;
     ShowsController showsController;
     private static final Scanner console = new Scanner(System.in);
     private final Prompt prompt;
 
     public ShowsMenu() throws Exception {
-        showsFile = new ShowsFile();
         episodesFile = new EpisodesFile();
         showsController = new ShowsController();
         prompt = new Prompt(console, "série");
