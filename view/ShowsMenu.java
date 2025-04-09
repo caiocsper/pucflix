@@ -36,7 +36,7 @@ public class ShowsMenu {
 
             System.out.print("\nOpção: ");
 
-            option = prompt.getInt("Opção inválida");
+            option = prompt.getNumber("Opção inválida", Integer::parseInt, -1);
 
             switch (option) {
                 case 1 -> create();
@@ -77,7 +77,7 @@ public class ShowsMenu {
 
                 do {
                     System.out.print("\nEscolha uma série de acordo com seu número listado acima: ");
-                    option = prompt.getInt("Número inválido!");
+                    option = prompt.getNumber("Número inválido!", Integer::parseInt, -1);
                 } while (option <= 0 || option > n - 1);
 
                 return hasShows[option - 1];

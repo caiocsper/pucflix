@@ -9,8 +9,8 @@ public class Main {
     public static void main(String[] args) {
         Scanner console;
         Prompt prompt;
-        try {
 
+        try {
             console = new Scanner(System.in);
             prompt = new Prompt(console, "");
             int option;
@@ -27,7 +27,7 @@ public class Main {
 
                 System.out.print("\nOpção: ");
 
-                option = prompt.getInt("Opção inválida");
+                option = prompt.getNumber("Opção inválida", Integer::parseInt, -1);
 
                 switch (option) {
                     case 1 -> (new ShowsMenu()).menu();

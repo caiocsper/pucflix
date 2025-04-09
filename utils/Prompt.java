@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.Scanner;
+import java.util.function.Function;
 
 public class Prompt {
 
@@ -12,26 +13,16 @@ public class Prompt {
         this.entityName = entityName;
     }
 
-    public int getInt(String errorMessage) {
+    public <T extends Number> T getNumber(String errorMessage, Function<String, T> parser, T defaultValue) {
         try {
-            return Integer.parseInt(scanner.nextLine());
+            return parser.apply(scanner.nextLine());
         } catch (NumberFormatException e) {
-            if(!errorMessage.isEmpty())
+            if (!errorMessage.isEmpty()) {
                 System.out.println(errorMessage);
+            }
         }
 
-        return -1;
-    }
-
-    public short getShort(String errorMessage) {
-        try {
-            return Short.parseShort(scanner.nextLine());
-        } catch (NumberFormatException e) {
-            if(!errorMessage.isEmpty())
-                System.out.println(errorMessage);
-        }
-
-        return -1;
+        return defaultValue;
     }
 
     public String getString() {
@@ -66,7 +57,13 @@ public class Prompt {
 
         do {
             System.out.print(attributeName + " (o valor min. é " + minValue + "): ");
-            input = this.getShort(allowEmpty ? "" : attributeName + " inválido. Favor inserir um " + attributeName.toLowerCase() + " inválido.");
+            input = this.getNumber(
+                    (allowEmpty
+                        ? ""
+                        : attributeName + " inválido. Favor inserir um " + attributeName.toLowerCase() + " inválido."),
+                    Short::parseShort,
+                    (short) -1
+                    );
 
             if ((input >= minValue && input <= maxValue) || (input == -1 && allowEmpty))
                 break;
