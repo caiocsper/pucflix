@@ -4,25 +4,18 @@ import controller.EpisodesController;
 import controller.ShowsController;
 import entities.Show;
 import java.time.LocalDate;
-import java.util.Scanner;
 import util.Prompt;
 
-//TODO Criar classe pai Menu
+public class ShowsMenu extends Menu<Show, ShowsController> {
 
-public class ShowsMenu {
-
-    private static final Scanner console = new Scanner(System.in);
     private final EpisodesController episodesController;
-    private final ShowsController showsController;
-    private final Prompt prompt;
 
     public ShowsMenu() throws Exception {
-        this.episodesController = new EpisodesController();
-        this.showsController = new ShowsController();
-        this.prompt = new Prompt(console);
+        super("Série", ShowsController.class.getConstructor());
+        this.episodesController = new EpisodesController(0);
     }
 
-    public void menu() {
+    public void menu() throws Exception {
         int option;
 
         do {
@@ -51,72 +44,6 @@ public class ShowsMenu {
 
         } while (option != 0);
     }
-
-    private void findByName() {
-        Prompt.clearPrompt();
-        this.displayHeader();
-
-        Show hasShow = this.findByName("\nBusca de série por nome");
-
-        if (hasShow != null)
-            this.read(hasShow);
-
-        this.prompt.displayReturnMessage();
-    }
-
-    public Show findByName(String message) {
-        Show[] hasShows;
-        System.out.println(message);
-        System.out.print("\nNome: ");
-
-        try {
-            hasShows = this.showsController.findByName(this.prompt.getString());
-            
-            if (hasShows == null)
-                System.out.println("\nNenhuma série encontrada.");
-            else {
-                int n = 1, option;
-
-                for (Show show : hasShows) {
-                    System.out.println((n++) + ": " + show.getName());
-                }
-
-                do {
-                    System.out.print("\nEscolha uma série de acordo com seu número listado acima: ");
-                    option = this.prompt.getNumber("Número inválido!", Integer::parseInt, -1);
-                } while (option <= 0 || option > n - 1);
-
-                return hasShows[option - 1];
-            }
-        } catch (Exception e) {
-            System.out.println("\nErro do sistema. Não foi possível buscar séries!");
-        }
-
-        return null;
-    }
-
-    private void findAll() {
-        Prompt.clearPrompt();
-        this.displayHeader();
-        System.out.println("Listagem de séries");
-
-        try {
-            Show[] shows = this.showsController.findAll();
-
-            if (shows.length < 1) 
-                System.out.println("\nNenhuma série encontrada.");
-            else {
-                System.out.println("\nSérie(s) encontrada(s).");
-
-                for (Show show : shows)
-                    this.read(show);
-            }
-        } catch (Exception e) {
-            System.out.println("\nErro do sistema. Não foi possível buscar séries!");
-        } finally {
-            this.prompt.displayReturnMessage();
-        }
-    }
     
     private void create() {
         Prompt.clearPrompt();
@@ -133,8 +60,12 @@ public class ShowsMenu {
                 return;
             }
 
-            this.showsController.create(new Show(name, summary, streamingOn, releaseYear));
+            Show show = new Show(name, summary, streamingOn, releaseYear);
+
+            this.controller.create(show);
+
             System.out.println("\nSérie criada com sucesso.");
+            this.read(show);
         } catch (Exception e) {
             System.out.println("\nErro do sistema. Não foi possível criar a série!");
         } finally {
@@ -172,7 +103,7 @@ public class ShowsMenu {
                     return;
                 }
                 
-                boolean isUpdated = this.showsController.update(hasShow);
+                boolean isUpdated = this.controller.update(hasShow);
 
                 if (!isUpdated) {
                     System.out.println("\nErro ao alterar a série.");
@@ -180,6 +111,7 @@ public class ShowsMenu {
                 }
                 
                 System.out.println("\nSérie alterada com sucesso.");
+                this.read(hasShow);
             }
         } catch (Exception e) {
             System.out.println("\nErro do sistema. Não foi possível alterar a série!");
@@ -213,7 +145,7 @@ public class ShowsMenu {
                     return;
                 }
 
-                boolean isDeleted = this.showsController.delete(id);
+                boolean isDeleted = this.controller.delete(id);
 
                 if (!isDeleted) {
                     System.out.println("\nErro ao excluir a série.");
@@ -230,7 +162,8 @@ public class ShowsMenu {
         
     }
 
-    private void read(Show show) {
+    @Override
+    public void read(Show show) {
         if (show == null)
             return;
 
@@ -240,11 +173,5 @@ public class ShowsMenu {
         System.out.printf("Streaming...........: %s%n", show.getStreamingOn());
         System.out.printf("Ano de Lançamento...: %d%n", show.getReleaseYear());
         System.out.println("----------------------");
-    }
-
-    private void displayHeader() {
-        System.out.println("\n\nPUCFlix 1.0");
-        System.out.println("-----------");
-        System.out.println("> Início > Séries");
     }
 }

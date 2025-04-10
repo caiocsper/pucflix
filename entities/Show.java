@@ -39,11 +39,13 @@ public class Show implements EntidadeArquivo {
     public void setID(int id) {
         this.id = id;
     }
-
+    
+    @Override
     public String getName() {
         return name;
     }
-
+    
+    @Override
     public void setName(String name) {
         this.name = name;
     }

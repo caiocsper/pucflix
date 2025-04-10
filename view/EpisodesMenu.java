@@ -5,26 +5,19 @@ import entities.Episode;
 import entities.Show;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Scanner;
 import util.Prompt;
 
-//TODO Criar classe pai Menu
+public class EpisodesMenu extends Menu<Episode, EpisodesController>{
 
-public class EpisodesMenu {
-
-    private static final Scanner console = new Scanner(System.in);
     private final ShowsMenu showsMenu;
-    private final EpisodesController episodesController;
-    private final Prompt prompt;
     private int showID;
 
     public EpisodesMenu() throws Exception {
+        super("Episódio", EpisodesController.class.getConstructor(new Class[] { int.class }), 0);
         this.showsMenu = new ShowsMenu();
-        this.prompt = new Prompt(console);
-        this.episodesController = new EpisodesController();
     }
 
-    public void menu() {
+    public void menu() throws Exception {
         Prompt.clearPrompt();
         this.displayHeader();
         Show show = this.showsMenu.findByName("\nBuscar série, que deseja consultar episódios, por nome: ");
@@ -33,6 +26,7 @@ public class EpisodesMenu {
             return;
         
         this.showID = show.getID();
+        this.controller = new EpisodesController(this.showID);
         
         int option;
         do {
@@ -62,78 +56,14 @@ public class EpisodesMenu {
         } while (option != 0);
     }
 
-    private void findByName() {
-        Prompt.clearPrompt();
-        this.displayHeader();
-
-        Episode hasEpisode = this.findByName("\nBusca de episódio por nome");
-
-        if (hasEpisode != null)
-            this.read(hasEpisode);
-
-        this.prompt.displayReturnMessage();
-    }
-
-    private Episode findByName(String message) {
-        System.out.println(message);
-        System.out.print("\nNome: ");
-
-        try {
-            Episode[] hasEpisodes = this.episodesController.findByName(this.prompt.getString(), this.showID);
-
-            if (hasEpisodes == null) 
-                System.out.println("\nNenhum episódio encontrado.");
-            else {
-                int n = 1, option;
-
-                for (Episode episode : hasEpisodes)
-                    System.out.println((n++) + ": " + episode.getName());
-
-                do {
-                    System.out.print("\nEscolha uma série de acordo com seu número listado acima: ");
-                    option = this.prompt.getNumber("Número inválido!", Integer::parseInt, -1);
-                } while (option <= 0 || option > n - 1);
-
-                return hasEpisodes[option - 1];
-            }
-        } catch (Exception e) {
-            System.out.println("\nErro do sistema. Não foi possível buscar episódios!");
-        }
-
-        return null;
-    }
-
-    private void findAll() {
-        Prompt.clearPrompt();
-        this.displayHeader();
-        System.out.println("Listagem de episódios");
-
-        try {
-            Episode[] hasEpisodes = this.episodesController.findAll(this.showID);
-
-            if (hasEpisodes == null) 
-                System.out.println("\nNenhum episódio encontrado.");
-            else {
-                System.out.println("\nEpisódio(s) encontrado(s).");
-
-                for (Episode episode : hasEpisodes)
-                    this.read(episode);
-            }
-        } catch (Exception e) {
-            System.out.println("\nErro do sistema. Não foi possível buscar episódios!");
-        } finally {
-            this.prompt.displayReturnMessage();
-        }
-    }
-
     private void create() {
         Prompt.clearPrompt();
         this.displayHeader();
         System.out.println("\nCriação de episódio");
 
         String    name        = this.prompt.promptString("Nome", 4, false);
-        byte      season      = this.prompt.promptByte("Temporada", (byte) 1, (byte) 255, false),
-                  length      = this.prompt.promptByte("Duração", (byte) 5, (byte) 255, false);
+        byte      season      = this.prompt.promptByte("Temporada", (byte) 1, (byte) 127, false),
+                  length      = this.prompt.promptByte("Duração", (byte) 5, (byte) 127, false);
         LocalDate releaseDate = this.prompt.promptDate("Data de lançamento", "dd/MM/yyyy", false);
 
         try {
@@ -142,8 +72,12 @@ public class EpisodesMenu {
                 return;
             }
 
-            this.episodesController.create(new Episode(showID, name, season, length, releaseDate));
+            Episode episode = new Episode(showID, name, season, length, releaseDate);
+
+            this.controller.create(episode);
+
             System.out.println("\nEpisódio criado com sucesso.");
+            this.read(episode);
         } catch (Exception e) {
             System.out.println("\nErro do sistema. Não foi possível criar episódio!");
         } finally {
@@ -168,7 +102,7 @@ public class EpisodesMenu {
 
                 String    name        = this.prompt.promptString("Nome", 4, true);
                 byte      season      = this.prompt.promptByte("Temporada", (byte) 1, (byte) 127, true),
-                        length      = this.prompt.promptByte("Duração", (byte) 5, (byte) 127, true);
+                          length      = this.prompt.promptByte("Duração", (byte) 5, (byte) 127, true);
                 LocalDate releaseDate = this.prompt.promptDate("Data de lançamento", "dd/MM/yyyy", true);
 
                 if (name != null) hasEpisode.setName(name);
@@ -181,7 +115,7 @@ public class EpisodesMenu {
                     return;
                 }
 
-                boolean isUpdated = this.episodesController.update(hasEpisode);
+                boolean isUpdated = this.controller.update(hasEpisode);
 
                 if (!isUpdated) {
                     System.out.println("\nErro ao alterar o episódio.");
@@ -189,6 +123,7 @@ public class EpisodesMenu {
                 }
 
                 System.out.println("\nEpisódio alterado com sucesso.");
+                this.read(hasEpisode);
             }
         } catch (Exception e) {
             System.out.println("\nErro do sistema. Não foi possível alterar o episódio!");
@@ -218,7 +153,7 @@ public class EpisodesMenu {
                     return;
                 }
 
-                boolean isDeleted = this.episodesController.delete(id);
+                boolean isDeleted = this.controller.delete(id);
 
                 if (!isDeleted) {
                     System.out.println("\nErro ao excluir episódio.");
@@ -234,7 +169,8 @@ public class EpisodesMenu {
         }
     }
 
-    private void read(Episode episode) {
+    @Override
+    public void read(Episode episode) {
         if (episode == null)
             return;
         
@@ -244,11 +180,5 @@ public class EpisodesMenu {
         System.out.printf("Duração..............: %s%n", episode.getLength());
         System.out.printf("Data de Lançamento...: %s%n", episode.getReleaseDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
         System.out.println("----------------------");
-    }
-
-    private void displayHeader() {
-        System.out.println("\n\nPUCFlix 1.0");
-        System.out.println("-----------");
-        System.out.println("> Início > Episódios");
     }
 }

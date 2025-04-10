@@ -29,23 +29,28 @@ public class EpisodesFile extends Arquivo<Episode> {
     }
 
     public Episode[] readName(String name, int showID) throws Exception {
-        if (name.length() == 0) {
+        if (name.length() == 0)
             return null;
-        }
+
         ArrayList<ParNomeId> pnis = indexName.read(new ParNomeId(name, -1));
-        if (!pnis.isEmpty()) {
-            List<Episode> episodes = new ArrayList<>();
-            for (ParNomeId pni : pnis) {
-                Episode episode = read(pni.getId());
-                if (episode.getShowID() == showID) {
-                    episodes.add(episode);
-                }
-            }
-            Episode[] episodesArr = new Episode[episodes.size()];
-            return episodes.toArray(episodesArr);
-        } else {
+
+        if (pnis.isEmpty())
             return null;
+
+        List<Episode> episodes = new ArrayList<>();
+
+        for (ParNomeId pni : pnis) {
+            Episode episode = read(pni.getId());
+
+            if (episode.getShowID() == showID)
+                episodes.add(episode);
         }
+
+        if (episodes.isEmpty()) 
+            return null;
+
+        Episode[] episodesArr = new Episode[episodes.size()];
+        return episodes.toArray(episodesArr);
     }
 
     public Episode[] readAll(int showID) throws Exception {
