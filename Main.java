@@ -1,7 +1,7 @@
 
 import java.util.Scanner;
-import utils.Prompt;
-import utils.Seeder;
+import util.Prompt;
+import util.Seeder;
 import view.*;
 
 public class Main {
@@ -12,7 +12,7 @@ public class Main {
 
         try {
             console = new Scanner(System.in);
-            prompt = new Prompt(console, "");
+            prompt = new Prompt(console);
             int option;
             do {
                 Prompt.clearPrompt();

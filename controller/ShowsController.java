@@ -1,21 +1,22 @@
 package controller;
 
 import entities.Show;
-import model.EpisodesFile;
 import model.ShowsFile;
 
 public class ShowsController {
 
     ShowsFile showsFile;
-    EpisodesFile episodesFile;
 
     public ShowsController() throws Exception {
         showsFile = new ShowsFile();
-        episodesFile = new EpisodesFile();
     }
 
     public Show[] findByName(String name) throws Exception {
         return showsFile.readName(name);
+    }
+
+    public Show[] findAll() throws Exception {
+        return showsFile.readAll();
     }
 
     public int create(Show show) throws Exception {

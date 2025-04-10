@@ -3,6 +3,7 @@ package model;
 import aeds3.*;
 import entities.Show;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ShowsFile extends Arquivo<Show> {
 
@@ -35,6 +36,21 @@ public class ShowsFile extends Arquivo<Show> {
         } else {
             return null;
         }
+    }
+
+    public Show[] readAll() throws Exception {
+        int lastId = this.getLastId();
+        List<Show> shows = new ArrayList<>();
+        
+        for (int currentId = 1; currentId <= lastId; currentId++){
+            Show hasShow = this.read(currentId);
+
+            if (hasShow != null)
+                shows.add(hasShow);
+        }
+        
+        Show[] showsArr = new Show[shows.size()];
+        return shows.toArray(showsArr);
     }
 
     @Override

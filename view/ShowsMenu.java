@@ -1,23 +1,25 @@
 package view;
 
+import controller.EpisodesController;
 import controller.ShowsController;
 import entities.Show;
 import java.time.LocalDate;
 import java.util.Scanner;
-import model.*;
-import utils.Prompt;
+import util.Prompt;
+
+//TODO Criar classe pai Menu
 
 public class ShowsMenu {
 
-    EpisodesFile episodesFile;
-    ShowsController showsController;
     private static final Scanner console = new Scanner(System.in);
+    private final EpisodesController episodesController;
+    private final ShowsController showsController;
     private final Prompt prompt;
 
     public ShowsMenu() throws Exception {
-        episodesFile = new EpisodesFile();
-        showsController = new ShowsController();
-        prompt = new Prompt(console, "série");
+        this.episodesController = new EpisodesController();
+        this.showsController = new ShowsController();
+        this.prompt = new Prompt(console);
     }
 
     public void menu() {
@@ -25,24 +27,24 @@ public class ShowsMenu {
 
         do {
             Prompt.clearPrompt();
-            System.out.println("\n\nPUCFlix 1.0");
-            System.out.println("-----------");
-            System.out.println("> Início > Séries");
-            System.out.println("\n1 - Adicionar");
-            System.out.println("2 - Buscar");
-            System.out.println("3 - Alterar");
-            System.out.println("4 - Excluir");
+            this.displayHeader();
+            System.out.println("\n1 - Listar");
+            System.out.println("2 - Criar");
+            System.out.println("3 - Buscar");
+            System.out.println("4 - Alterar");
+            System.out.println("5 - Excluir");
             System.out.println("0 - Retornar ao menu anterior");
 
             System.out.print("\nOpção: ");
 
-            option = prompt.getNumber("Opção inválida", Integer::parseInt, -1);
+            option = this.prompt.getNumber("Opção inválida", Integer::parseInt, -1);
 
             switch (option) {
-                case 1 -> create();
-                case 2 -> findByName();
-                case 3 -> update();
-                case 4 -> delete();
+                case 1 -> this.findAll();
+                case 2 -> this.create();
+                case 3 -> this.findByName();
+                case 4 -> this.update();
+                case 5 -> this.delete();
                 case 0 -> { return; }
                 default -> System.out.println("Opção inválida!");
             }
@@ -50,12 +52,16 @@ public class ShowsMenu {
         } while (option != 0);
     }
 
-    public void findByName() {
+    private void findByName() {
         Prompt.clearPrompt();
-        Show hasShow = findByName("\nBusca de série por nome");
+        this.displayHeader();
+
+        Show hasShow = this.findByName("\nBusca de série por nome");
+
         if (hasShow != null)
-            read(hasShow);
-        prompt.displayReturnMessage();
+            this.read(hasShow);
+
+        this.prompt.displayReturnMessage();
     }
 
     public Show findByName(String message) {
@@ -64,10 +70,10 @@ public class ShowsMenu {
         System.out.print("\nNome: ");
 
         try {
-            hasShows = showsController.findByName(prompt.getString());
+            hasShows = this.showsController.findByName(this.prompt.getString());
             
             if (hasShows == null)
-                System.out.println("Nenhuma série encontrada.");
+                System.out.println("\nNenhuma série encontrada.");
             else {
                 int n = 1, option;
 
@@ -77,135 +83,168 @@ public class ShowsMenu {
 
                 do {
                     System.out.print("\nEscolha uma série de acordo com seu número listado acima: ");
-                    option = prompt.getNumber("Número inválido!", Integer::parseInt, -1);
+                    option = this.prompt.getNumber("Número inválido!", Integer::parseInt, -1);
                 } while (option <= 0 || option > n - 1);
 
                 return hasShows[option - 1];
             }
         } catch (Exception e) {
-            System.out.println("Erro do sistema. Não foi possível buscar séries!");
+            System.out.println("\nErro do sistema. Não foi possível buscar séries!");
         }
 
         return null;
     }
 
-    public void create() {
+    private void findAll() {
         Prompt.clearPrompt();
-        System.out.println("\nCriação de série");
-        String  name        = prompt.promptString("Nome", 4, false),
-                summary     = prompt.promptString("Sinopse", 20, false),
-                streamingOn = prompt.promptString("Streaming", 4, false);
-        short   releaseYear = prompt.promptShort("Ano de lançamento", (short) 1926, (short) LocalDate.now().getYear(), false);
-
-        if (!prompt.promptConfirmation("Confirma a inclusão da série? (S/N) "))
-            return;
+        this.displayHeader();
+        System.out.println("Listagem de séries");
 
         try {
-            Show show = new Show(name, summary, streamingOn, releaseYear);
-            showsController.create(show);
-            System.out.println("Série incluída com sucesso.");
-        } catch (Exception e) {
-            System.out.println("Erro do sistema. Não foi possível incluir a série!");
-        }
+            Show[] shows = this.showsController.findAll();
 
-        prompt.displayReturnMessage();
+            if (shows.length < 1) 
+                System.out.println("\nNenhuma série encontrada.");
+            else {
+                System.out.println("\nSérie(s) encontrada(s).");
+
+                for (Show show : shows)
+                    this.read(show);
+            }
+        } catch (Exception e) {
+            System.out.println("\nErro do sistema. Não foi possível buscar séries!");
+        } finally {
+            this.prompt.displayReturnMessage();
+        }
+    }
+    
+    private void create() {
+        Prompt.clearPrompt();
+        this.displayHeader();
+        System.out.println("\nCriação de série");
+        String  name        = this.prompt.promptString("Nome", 4, false),
+                summary     = this.prompt.promptString("Sinopse", 20, false),
+                streamingOn = this.prompt.promptString("Streaming", 4, false);
+        short   releaseYear = this.prompt.promptShort("Ano de lançamento", (short) 1926, (short) LocalDate.now().getYear(), false);
+        
+        try {
+            if (!this.prompt.promptConfirmation("\nConfirma a criação da série? (S/N) ")) {
+                System.out.println("\nCriação cancelada.");
+                return;
+            }
+
+            this.showsController.create(new Show(name, summary, streamingOn, releaseYear));
+            System.out.println("\nSérie criada com sucesso.");
+        } catch (Exception e) {
+            System.out.println("\nErro do sistema. Não foi possível criar a série!");
+        } finally {
+            this.prompt.displayReturnMessage();
+        }
     }
 
-    public void update() {
+    private void update() {
         Prompt.clearPrompt();
+        this.displayHeader();
         System.out.println("\nAlteração de série");
 
         try {
-            Show show = this.findByName("Buscar série, a ser alterada, por nome: ");
+            Show hasShow = this.findByName("Buscar série, a ser alterada, por nome: ");
 
-            if (show == null)
+            if (hasShow == null)
                 System.out.println("\nSérie não encontrada.");
             else {
                 System.out.println("\nSérie encontrada!");
-                this.read(show);
+                this.read(hasShow);
                 System.out.println("");
 
-                String  name        = prompt.promptString("Nome", 4, true),
-                        summary     = prompt.promptString("Sinopse", 20, true),
-                        streamingOn = prompt.promptString("Streaming", 4, true);
-                short   releaseYear = prompt.promptShort("Ano de lançamento", (short) 1926, (short) LocalDate.now().getYear(), true);
+                String  name        = this.prompt.promptString("Nome", 4, true),
+                        summary     = this.prompt.promptString("Sinopse", 20, true),
+                        streamingOn = this.prompt.promptString("Streaming", 4, true);
+                short   releaseYear = this.prompt.promptShort("Ano de lançamento", (short) 1926, (short) LocalDate.now().getYear(), true);
 
-                if (name != null) show.setName(name);
-                if (summary != null) show.setSummary(summary);
-                if (streamingOn != null) show.setStreamingOn(streamingOn);
-                if (releaseYear >= (short) 1926) show.setReleaseYear(releaseYear);
+                if (name != null) hasShow.setName(name);
+                if (summary != null) hasShow.setSummary(summary);
+                if (streamingOn != null) hasShow.setStreamingOn(streamingOn);
+                if (releaseYear > -1) hasShow.setReleaseYear(releaseYear);
 
-                if (!prompt.promptConfirmation("Confirma as alterações? (S/N) ")) {
-                    System.out.println("Alterações canceladas.");
+                if (!this.prompt.promptConfirmation("\nConfirma as alterações? (S/N) ")) {
+                    System.out.println("\nAlterações canceladas.");
                     return;
                 }
                 
-                boolean isUpdated = showsController.update(show);
+                boolean isUpdated = this.showsController.update(hasShow);
 
                 if (!isUpdated) {
-                    System.out.println("Erro ao alterar a série.");
+                    System.out.println("\nErro ao alterar a série.");
                     return;
                 }
                 
-                System.out.println("Série alterada com sucesso.");
+                System.out.println("\nSérie alterada com sucesso.");
             }
         } catch (Exception e) {
-            System.out.println("Erro do sistema. Não foi possível alterar a série!");
+            System.out.println("\nErro do sistema. Não foi possível alterar a série!");
+        } finally {
+            this.prompt.displayReturnMessage();
         }
-
-        prompt.displayReturnMessage();
     }
 
-    public void delete() {
+    private void delete() {
         Prompt.clearPrompt();
+        this.displayHeader();
         System.out.println("\nExclusão de série");
 
-        Show show = this.findByName("Buscar série, a ser excluida, por nome: ");
+        try {
+            Show hasShow = this.findByName("Buscar série, a ser excluída, por nome: ");
 
-        if (show == null)
-            System.out.println("Série não encontrado.");
-        else {
-            System.out.println("Série encontrada!");
-            read(show);
-            int id = show.getID();
-            try {
-                if (!episodesFile.isEmpty(show.getID())) {
-                    System.out.println("Não é possível excluir uma série vinculada a um ou mais episódios.");
+            if (hasShow == null)
+                System.out.println("\nSérie não encontrada.");
+            else {
+                System.out.println("\nSérie encontrada!");
+                this.read(hasShow);
+                int id = hasShow.getID();
+                
+                if (!this.episodesController.isEmpty(hasShow.getID())) {
+                    System.out.println("\nNão é possível excluir uma série vinculada a um ou mais episódios.");
                     return;
                 }
 
-                if (!prompt.promptConfirmation("\nConfirma a exclusão da série? (S/N) ")) {
-                    System.out.println("Exclusão cancelada.");
+                if (!this.prompt.promptConfirmation("\nConfirma a exclusão da série? (S/N) ")) {
+                    System.out.println("\nExclusão cancelada.");
                     return;
                 }
 
-                boolean isDeleted = showsController.delete(id);
+                boolean isDeleted = this.showsController.delete(id);
 
                 if (!isDeleted) {
-                    System.out.println("Erro ao excluir a série.");
+                    System.out.println("\nErro ao excluir a série.");
                     return;
                 }
 
-                System.out.println("Série excluída com sucesso.");
-            } catch (Exception e) {
-                System.out.println("Erro do sistema. Não foi possível excluir a série!");
+                System.out.println("\nSérie excluída com sucesso.");
             }
-
-            prompt.displayReturnMessage();
+        } catch (Exception e) {
+            System.out.println("\nErro do sistema. Não foi possível excluir a série!");
+        } finally {
+            this.prompt.displayReturnMessage();
         }
         
     }
 
-    public void read(Show show) {
+    private void read(Show show) {
         if (show == null)
             return;
 
         System.out.println("\n----------------------");
-        System.out.printf("ID..................: %s%n", show.getID());
         System.out.printf("Nome................: %s%n", show.getName());
         System.out.printf("Sinopse.............: %s%n", show.getSummary());
         System.out.printf("Streaming...........: %s%n", show.getStreamingOn());
         System.out.printf("Ano de Lançamento...: %d%n", show.getReleaseYear());
         System.out.println("----------------------");
+    }
+
+    private void displayHeader() {
+        System.out.println("\n\nPUCFlix 1.0");
+        System.out.println("-----------");
+        System.out.println("> Início > Séries");
     }
 }

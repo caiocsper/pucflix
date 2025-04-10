@@ -238,4 +238,9 @@ public class Arquivo<T extends EntidadeArquivo> {
         }
         return endereco;
     }
+
+    public int getLastId() throws Exception {
+        arquivo.seek(1);
+        return arquivo.readInt();
+    }
 }
