@@ -48,6 +48,21 @@ public class EpisodesFile extends Arquivo<Episode> {
         }
     }
 
+    public Episode[] readAll(int showID) throws Exception {
+        ArrayList<ParIdId> piis = indexShowEpisode.read(new ParIdId(showID, -1));
+
+        if (piis.isEmpty())
+            return null;
+
+        Episode[] episodes = new Episode[piis.size()];
+        int i = 0;
+
+        for (ParIdId pii : piis)
+            episodes[i++] = read(pii.getId());
+
+        return episodes;
+    }
+
     @Override
     public boolean delete(int id) throws Exception {
         Episode episode = this.read(id);
