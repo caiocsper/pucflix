@@ -11,13 +11,14 @@ public class ShowsFile extends Arquivo<Show> {
 
     public ShowsFile() throws Exception {
         super("shows", Show.class.getConstructor());
-        indexName = new ArvoreBMais<>(ParNomeId.class.getConstructor(), 5, "./dados/" + this.nomeEntidade + "/indexNames.db");
+        this.indexName = new ArvoreBMais<>(ParNomeId.class.getConstructor(), 5, "./dados/" + this.nomeEntidade + "/indexNames.db");
     }
 
     @Override
     public int create(Show show) throws Exception {
         int id = super.create(show);
-        indexName.create(new ParNomeId(show.getName(), id));
+        this.indexName.create(new ParNomeId(show.getName(), id));
+
         return id;
     }
 
@@ -25,24 +26,26 @@ public class ShowsFile extends Arquivo<Show> {
         if (name.length() == 0) {
             return null;
         }
-        ArrayList<ParNomeId> pnis = indexName.read(new ParNomeId(name, -1));
-        if (!pnis.isEmpty()) {
-            Show[] shows = new Show[pnis.size()];
-            int i = 0;
-            for (ParNomeId pni : pnis) {
-                shows[i++] = read(pni.getId());
-            }
-            return shows;
-        } else {
+
+        ArrayList<ParNomeId> pnis = this.indexName.read(new ParNomeId(name, -1));
+
+        if (pnis.isEmpty())
             return null;
-        }
+
+        Show[] shows = new Show[pnis.size()];
+        int i = 0;
+
+        for (ParNomeId pni : pnis)
+            shows[i++] = this.read(pni.getId());
+
+        return shows;
     }
 
     public Show[] readAll() throws Exception {
         int lastId = this.getLastId();
         List<Show> shows = new ArrayList<>();
         
-        for (int currentId = 1; currentId <= lastId; currentId++){
+        for (int currentId = 1; currentId <= lastId; currentId++) {
             Show hasShow = this.read(currentId);
 
             if (hasShow != null)
@@ -55,27 +58,26 @@ public class ShowsFile extends Arquivo<Show> {
 
     @Override
     public boolean delete(int id) throws Exception {
-        Show show = read(id);   // na superclasse
-        if (show != null) {
-            if (super.delete(id)) {
-                return indexName.delete(new ParNomeId(show.getName(), id));
-            }
-        }
-        return false;
+        Show show = this.read(id);
+
+        if (show == null || !super.delete(id))
+            return false;
+
+        return this.indexName.delete(new ParNomeId(show.getName(), id));
     }
 
     @Override
     public boolean update(Show newShow) throws Exception {
-        Show show = read(newShow.getID());    // na superclasse
-        if (show != null) {
-            if (super.update(newShow)) {
-                if (!show.getName().equals(newShow.getName())) {
-                    indexName.delete(new ParNomeId(show.getName(), show.getID()));
-                    indexName.create(new ParNomeId(newShow.getName(), newShow.getID()));
-                }
-                return true;
-            }
+        Show show = this.read(newShow.getID());
+
+        if (show == null || !super.update(newShow))
+            return false;
+
+        if (!show.getName().equals(newShow.getName())) {
+            this.indexName.delete(new ParNomeId(show.getName(), show.getID()));
+            this.indexName.create(new ParNomeId(newShow.getName(), newShow.getID()));
         }
-        return false;
+
+        return true;
     }
 }

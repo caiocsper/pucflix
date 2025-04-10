@@ -15,15 +15,15 @@ public class EpisodesFile extends Arquivo<Episode> {
 
     public EpisodesFile() throws Exception {
         super("episodes", Episode.class.getConstructor());
-        indexShowEpisode = new ArvoreBMais<>(ParIdId.class.getConstructor(), 5, "dados/" + this.nomeEntidade + "/showEpisodes.db");
-        indexName = new ArvoreBMais<>(ParNomeId.class.getConstructor(), 5, "dados/" + this.nomeEntidade + "/indexNames.db");
+        this.indexShowEpisode = new ArvoreBMais<>(ParIdId.class.getConstructor(), 5, "dados/" + this.nomeEntidade + "/showEpisodes.db");
+        this.indexName = new ArvoreBMais<>(ParNomeId.class.getConstructor(), 5, "dados/" + this.nomeEntidade + "/indexNames.db");
     }
 
     @Override
     public int create(Episode episode) throws Exception {
         int id = super.create(episode);
-        indexShowEpisode.create(new ParIdId(episode.getShowID(), id));
-        indexName.create(new ParNomeId(episode.getName(), id));
+        this.indexShowEpisode.create(new ParIdId(episode.getShowID(), id));
+        this.indexName.create(new ParNomeId(episode.getName(), id));
 
         return id;
     }
@@ -40,7 +40,7 @@ public class EpisodesFile extends Arquivo<Episode> {
         List<Episode> episodes = new ArrayList<>();
 
         for (ParNomeId pni : pnis) {
-            Episode episode = read(pni.getId());
+            Episode episode = this.read(pni.getId());
 
             if (episode.getShowID() == showID)
                 episodes.add(episode);
@@ -54,7 +54,7 @@ public class EpisodesFile extends Arquivo<Episode> {
     }
 
     public Episode[] readAll(int showID) throws Exception {
-        ArrayList<ParIdId> piis = indexShowEpisode.read(new ParIdId(showID, -1));
+        ArrayList<ParIdId> piis = this.indexShowEpisode.read(new ParIdId(showID, -1));
 
         if (piis.isEmpty())
             return null;
@@ -63,7 +63,7 @@ public class EpisodesFile extends Arquivo<Episode> {
         int i = 0;
 
         for (ParIdId pii : piis)
-            episodes[i++] = read(pii.getId());
+            episodes[i++] = this.read(pii.getId());
 
         return episodes;
     }
@@ -72,32 +72,29 @@ public class EpisodesFile extends Arquivo<Episode> {
     public boolean delete(int id) throws Exception {
         Episode episode = this.read(id);
 
-        if (episode != null) {
-            if (super.delete(id)) {
-                return indexShowEpisode.delete(new ParIdId(episode.getShowID(), id))
-                        && indexName.delete(new ParNomeId(episode.getName(), id));
-            }
-        }
-
-        return false;
+        if (episode == null || !super.delete(id))
+            return false;
+        
+        return this.indexShowEpisode.delete(new ParIdId(episode.getShowID(), id))
+                && this.indexName.delete(new ParNomeId(episode.getName(), id));
     }
 
     @Override
     public boolean update(Episode newEpisode) throws Exception {
-        Episode episode = read(newEpisode.getID());    // na superclasse
-        if (episode != null) {
-            if (super.update(newEpisode)) {
-                if (!episode.getName().equals(newEpisode.getName())) {
-                    indexName.delete(new ParNomeId(episode.getName(), episode.getID()));
-                    indexName.create(new ParNomeId(newEpisode.getName(), newEpisode.getID()));
-                }
-                return true;
-            }
+        Episode episode = this.read(newEpisode.getID());
+
+        if (episode == null || !super.update(newEpisode))
+            return false;
+
+        if (!episode.getName().equals(newEpisode.getName())) {
+            this.indexName.delete(new ParNomeId(episode.getName(), episode.getID()));
+            this.indexName.create(new ParNomeId(newEpisode.getName(), newEpisode.getID()));
         }
-        return false;
+
+        return true;
     }
 
     public boolean isEmpty(int showId) throws Exception {
-        return indexShowEpisode.read(new ParIdId(showId, -1)).isEmpty();
+        return this.indexShowEpisode.read(new ParIdId(showId, -1)).isEmpty();
     }
 }
