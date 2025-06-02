@@ -1,12 +1,12 @@
 package entities;
 
-import aeds3.EntidadeArquivo;
+import aeds3.EntidadeArquivoCompleto;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-public class ActorShow implements EntidadeArquivo {
+public class ActorShow implements EntidadeArquivoCompleto {
 
     private int id;
     private int actorId;
@@ -34,6 +34,16 @@ public class ActorShow implements EntidadeArquivo {
     @Override
     public void setID(int id) {
         this.id = id;
+    }
+
+    @Override
+    public String getName() {
+        throw new UnsupportedOperationException("Erro inesperado");
+    }
+
+    @Override
+    public void setName(String name) {
+        throw new UnsupportedOperationException("Erro inesperado");
     }
 
     public int getActorId() {

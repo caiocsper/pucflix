@@ -22,6 +22,7 @@ public class Main {
                 System.out.println("\n1 - Séries");
                 System.out.println("2 - Episódios");
                 System.out.println("3 - Atores");
+                System.out.println("4 - Elenco");
                 System.out.println("9 - Povoar");
                 System.out.println("0 - Sair");
 
@@ -33,6 +34,7 @@ public class Main {
                     case 1 -> (new ShowsMenu()).menu();
                     case 2 -> (new EpisodesMenu()).menu();
                     case 3 -> (new ActorsMenu()).menu();
+                    case 4 -> (new ActorsShowsMenu()).menu();
                     case 9 -> (new Seeder()).fillDB();
                     case 0 -> { return; }
                     default -> {

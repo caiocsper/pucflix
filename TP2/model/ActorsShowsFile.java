@@ -3,18 +3,25 @@ package model;
 import aeds3.Arquivo;
 import aeds3.ArvoreBMais;
 import aeds3.ParIdId;
+import entities.Actor;
 import entities.ActorShow;
+import entities.Show;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ActorsShowsFile extends Arquivo<ActorShow> {
 
     private final ArvoreBMais<ParIdId> indexActor;
     private final ArvoreBMais<ParIdId> indexShow;
+    private final ActorsFile actorsFile;
+    private final ShowsFile showsFile;
 
     public ActorsShowsFile() throws Exception {
         super("actorsShows", ActorShow.class.getConstructor());
-        this.indexActor = new ArvoreBMais<>(ParIdId.class.getConstructor(), 5, "dados/" + this.nomeEntidade + "/actors.db");
-        this.indexShow = new ArvoreBMais<>(ParIdId.class.getConstructor(), 5, "dados/" + this.nomeEntidade + "/shows.db");
+        this.indexActor = new ArvoreBMais<>(ParIdId.class.getConstructor(), 5, "dados/" + this.nomeEntidade + "/actorShows.db");
+        this.indexShow = new ArvoreBMais<>(ParIdId.class.getConstructor(), 5, "dados/" + this.nomeEntidade + "/showActors.db");
+        this.showsFile = new ShowsFile();
+        this.actorsFile = new ActorsFile();
     }
 
     @Override
@@ -26,33 +33,37 @@ public class ActorsShowsFile extends Arquivo<ActorShow> {
         return id;
     }
 
+    public ActorShow[] readName(String name) throws Exception {
+        throw new UnsupportedOperationException("Erro inesperado.");
+    }
 
-    public ActorShow[] readActors(int showId) throws Exception {
+
+    public Actor[] readShowActors(int showId) throws Exception {
         ArrayList<ParIdId> piis = this.indexShow.read(new ParIdId(showId, -1));
 
         if (piis.isEmpty())
             return null;
 
-        ActorShow[] actorsShow = new ActorShow[piis.size()];
+        Actor[] showActors = new Actor[piis.size()];
         int i = 0;
 
         for (ParIdId pii : piis)
-            actorsShow[i++] = this.read(pii.getId());
+            showActors[i++] = this.actorsFile.read(pii.getId());
 
-        return actorsShow;
+        return showActors;
     }
 
-    public ActorShow[] readShows(int actorId) throws Exception {
+    public Show[] readActorShows(int actorId) throws Exception {
         ArrayList<ParIdId> piis = this.indexActor.read(new ParIdId(actorId, -1));
 
         if (piis.isEmpty())
             return null;
 
-        ActorShow[] actorShows = new ActorShow[piis.size()];
+        Show[] actorShows = new Show[piis.size()];
         int i = 0;
 
         for (ParIdId pii : piis)
-            actorShows[i++] = this.read(pii.getId());
+            actorShows[i++] = this.showsFile.read(pii.getId());
 
         return actorShows;
     }
@@ -68,14 +79,22 @@ public class ActorsShowsFile extends Arquivo<ActorShow> {
                 && this.indexShow.delete(new ParIdId(actorShow.getShowId(), actorShow.getActorId()));
     }
 
-    @Override
-    public boolean update(ActorShow newEpisode) throws Exception {
-        ActorShow actorShow = this.read(newEpisode.getID());
+    public ActorShow[] readAll() throws Exception {
+        int lastId = this.getLastId();
+        List<ActorShow> actorShow = new ArrayList<>();
+        
+        for (int currentId = 1; currentId <= lastId; currentId++) {
+            ActorShow hasActorShow = this.read(currentId);
 
-        return !(actorShow == null || !super.update(newEpisode));
+            if (hasActorShow != null)
+                actorShow.add(hasActorShow);
+        }
+        
+        ActorShow[] actorShowArr = new ActorShow[actorShow.size()];
+        return actorShow.toArray(actorShowArr);
     }
 
-    public boolean isEmpty(int id) throws Exception {
-        return this.indexActor.read(new ParIdId(id, -1)).isEmpty();
+    public boolean isEmpty(int actorId) throws Exception {
+        return this.indexActor.read(new ParIdId(actorId, -1)).isEmpty();
     }
 }

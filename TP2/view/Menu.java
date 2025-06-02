@@ -67,7 +67,7 @@ public abstract class Menu<E extends EntidadeArquivoCompleto, C extends IControl
         try {
             E[] hasEntities = this.controller.findAll();
 
-            if (hasEntities == null) 
+            if (hasEntities == null || hasEntities.length == 0) 
                 System.out.println("\nNenhum(a) " + this.entityName.toLowerCase() + " encontrado(a).");
             else {
                 System.out.println("\n" + this.entityName + "(s) encontrado(a)(s).");

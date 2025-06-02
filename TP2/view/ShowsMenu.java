@@ -2,17 +2,21 @@ package view;
 
 import controller.EpisodesController;
 import controller.ShowsController;
+import entities.ActorShow;
 import entities.Show;
 import java.time.LocalDate;
+import model.ActorsShowsFile;
 import util.Prompt;
 
 public class ShowsMenu extends Menu<Show, ShowsController> {
 
     private final EpisodesController episodesController;
+    private final ActorsShowsFile actorsShowsFile;
 
     public ShowsMenu() throws Exception {
         super("Série", ShowsController.class.getConstructor());
         this.episodesController = new EpisodesController(0);
+        this.actorsShowsFile = new ActorsShowsFile();
     }
 
     public void menu() throws Exception {
@@ -146,6 +150,7 @@ public class ShowsMenu extends Menu<Show, ShowsController> {
                 }
 
                 boolean isDeleted = this.controller.delete(id);
+                this.deleteLinkToActors(id);
 
                 if (!isDeleted) {
                     System.out.println("\nErro ao excluir a série.");
@@ -160,6 +165,20 @@ public class ShowsMenu extends Menu<Show, ShowsController> {
             this.prompt.displayReturnMessage();
         }
         
+    }
+
+    private boolean deleteLinkToActors(int showID) throws Exception {
+        ActorShow[] actorsShows = this.actorsShowsFile.readAll();
+        int deleted = 0;
+
+        for(ActorShow actorShow : actorsShows) {
+            if (actorShow.getShowId() == showID) {
+                this.actorsShowsFile.delete(actorShow.getID());
+                deleted++;
+            }
+        }
+
+        return deleted > 0;
     }
 
     @Override

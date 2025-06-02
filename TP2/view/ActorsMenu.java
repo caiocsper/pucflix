@@ -2,19 +2,16 @@ package view;
 
 import controller.ActorsController;
 import entities.Actor;
-import entities.ActorShow;
 import entities.Show;
 import model.ActorsShowsFile;
 import util.Prompt;
 
 public class ActorsMenu extends Menu<Actor, ActorsController> {
 
-    private final ShowsMenu showsMenu;
     private final ActorsShowsFile actorsShowsFile;
 
     public ActorsMenu() throws Exception {
         super("Ator", ActorsController.class.getConstructor());
-        this.showsMenu = new ShowsMenu();
         this.actorsShowsFile = new ActorsShowsFile();
     }
 
@@ -29,7 +26,6 @@ public class ActorsMenu extends Menu<Actor, ActorsController> {
             System.out.println("3 - Buscar");
             System.out.println("4 - Alterar");
             System.out.println("5 - Excluir");
-            System.out.println("6 - Adicionar ao elenco de uma série");
             System.out.println("0 - Retornar ao menu anterior");
 
             System.out.print("\nOpção: ");
@@ -42,8 +38,6 @@ public class ActorsMenu extends Menu<Actor, ActorsController> {
                 case 3 -> this.findByName();
                 case 4 -> this.update();
                 case 5 -> this.delete();
-                case 6 -> this.addToShow();
-                // case 7 -> this.findShows();
                 case 0 -> { return; }
                 default -> System.out.println("Opção inválida!");
             }
@@ -133,7 +127,7 @@ public class ActorsMenu extends Menu<Actor, ActorsController> {
                 int id = hasActor.getID();
 
                 if (!this.actorsShowsFile.isEmpty(id)) {
-                    System.out.println("\nNão é possível excluir um(a) ator(atriz) vinculado(a) a um ou mais episódios.");
+                    System.out.println("\nNão é possível excluir um(a) ator(atriz) vinculado(a) a uma ou mais séries.");
                     return;
                 }
 
@@ -149,7 +143,7 @@ public class ActorsMenu extends Menu<Actor, ActorsController> {
                     return;
                 }
 
-                System.out.println("\nAtor(Atriz) excluída com sucesso.");
+                System.out.println("\nAtor(Atriz) excluído(a) com sucesso.");
             }
         } catch (Exception e) {
             System.out.println("\nErro do sistema. Não foi possível excluir a ator(atriz)!");
@@ -159,56 +153,29 @@ public class ActorsMenu extends Menu<Actor, ActorsController> {
         
     }
 
-    private void addToShow() {
-        Prompt.clearPrompt();
-        this.displayHeader();
-        System.out.println("\nAdicionar ator(atriz) ao elenco de um show");
-
-        try {
-            Actor hasActor = this.findByName("Buscar ator(atriz), a ser adicionado(a), por nome: ");
-
-            if (hasActor == null)
-                System.out.println("\nAtor(Atriz) não encontrado(a).");
-            else {
-                System.out.println("\nAtor(Atriz) encontrado(a)!");
-                this.read(hasActor);
-                System.out.println("");
-
-                Show hasShow = this.showsMenu.findByName("Buscar série, em que atuaram, por nome: ");
-
-                if (hasShow == null)
-                    System.out.println("\nSérie não encontrada.");
-                else {
-                    System.out.println("\nSérie encontrada!");
-                    this.showsMenu.read(hasShow);
-                    System.out.println("");
-
-                    if (!this.prompt.promptConfirmation("\nConfirmar participação do elenco? (S/N) ")) {
-                        System.out.println("\nOperação cancelada.");
-                        return;
-                    }
-                    ActorShow actorShow = new ActorShow(hasActor.getID(), hasShow.getID());
-                    
-                    this.actorsShowsFile.create(actorShow);
-                    
-                    System.out.println("\nAtor(Atriz) adicionado(a) ao elenco com sucesso.");
-                    this.read(hasActor);
-                }                
-            }
-        } catch (Exception e) {
-            System.out.println("\nErro do sistema. Não foi possível adicionar o(a) ator(atriz) ao elenco!");
-        } finally {
-            this.prompt.displayReturnMessage();
-        }
-    }
-
     @Override
     public void read(Actor actor) {
         if (actor == null)
             return;
 
-        System.out.println("\n----------------------");
-        System.out.printf("Nome................: %s%n", actor.getName());
-        System.out.println("----------------------");
+        
+
+        try {
+            Show[] hasActorShows = this.actorsShowsFile.readActorShows(actor.getID());
+            System.out.println("\n----------------------");
+            System.out.printf("Nome................: %s%n", actor.getName());
+            if (hasActorShows == null || hasActorShows.length == 0) {
+                System.out.printf("\nEste(a) ator(atriz) não faz parte de nenhuma série.%n");
+            } else {
+                System.out.printf("\nAtua em:\n\n");
+                for (Show show : hasActorShows) {
+                    System.out.printf("> %s%n", show.getName());
+                }
+            }
+            
+            System.out.println("----------------------");
+        } catch (Exception e) {
+            System.out.println("\nOcorreu um erro inesperado ao listar um(a) ator(atriz).");
+        }
     }
 }
