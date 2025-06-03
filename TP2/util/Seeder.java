@@ -4,9 +4,9 @@ import entities.Episode;
 import entities.Show;
 import java.io.File;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.Scanner;
-import model.EpisodesFile;
-import model.ShowsFile;
+import model.*;
 
 public class Seeder {
 
@@ -17,8 +17,16 @@ public class Seeder {
     private EpisodesFile episodesFile;
 
     private void resetDB() throws Exception {
-        if (!deleteDirectory(new File("./dados")))
-            throw new Exception();
+        File dadosDir = new File("./dados");
+        if (dadosDir.exists()) {
+            if (!deleteDirectory(dadosDir)) {
+                throw new Exception("Could not delete ./dados directory");
+            }
+        }
+
+        if (!dadosDir.exists() && !dadosDir.mkdirs()) {
+            throw new Exception("Could not create ./dados directory");
+        }
     }
 
     private boolean deleteDirectory(File directoryToBeDeleted) {
@@ -105,6 +113,36 @@ public class Seeder {
         this.episodesFile.create(new Episode(showsID[4], "eps1.2_d3bug.mkv", (byte) 1, (byte) 45, LocalDate.of(2015, 7, 8)));
     }
 
+    private void fillActorsAndRelations() throws Exception {
+        ActorsFile actorsFile = new ActorsFile();
+        ActorsShowsFile actorsShowsFile = new ActorsShowsFile();
+
+        String[][] showActors = new String[][] {
+            {"Adam Scott", "Patricia Clarkson", "John Turturro", "Kristen Bell"},
+            {"Kristen Bell", "Ted Danson", "William Jackson Harper", "Adam Scott"},
+            {"Millie Bobby Brown", "David Harbour", "Winona Ryder", "Patricia Clarkson"},
+            {"Louis Hofmann", "Lisa Vicari", "Patricia Clarkson", "Winona Ryder"},
+            {"Rami Malek", "Christian Slater", "Portia Doubleday", "Kristen Bell"}
+        };
+
+        Map<String, Integer> actorIds = new java.util.HashMap<>();
+
+        for (String[] actors : showActors) {
+            for (String actorName : actors) {
+                if (!actorIds.containsKey(actorName)) {
+                    int actorId = actorsFile.create(new entities.Actor(actorName));
+                    actorIds.put(actorName, actorId);
+                }
+            }
+        }
+
+        for (int showId = 0; showId < showsID.length; showId++) {
+            for (String actorName : showActors[showId]) {
+                actorsShowsFile.create(new entities.ActorShow(actorIds.get(actorName), showsID[showId]));
+            }
+        }
+    }
+
     public void fillDB() {
         System.out.print("\nAo confirmar, quaisquer alterações feitas no banco de dados serão perdidas. Este processo é IRREVERSÍVEL! ");
 
@@ -117,6 +155,7 @@ public class Seeder {
             this.resetDB();
             this.fillShows();
             this.fillEpisodes();
+            this.fillActorsAndRelations();
 
             System.out.println("\nBase de dados populada com sucesso!");
         } catch (Exception e) {
